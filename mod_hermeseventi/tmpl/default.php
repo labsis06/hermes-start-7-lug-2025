@@ -302,7 +302,9 @@ foreach ($immagini as $img) {
 
 <style>
     .confronto-immagine { position: relative; display: inline-block; }
-    .img-wrapper { overflow: hidden; }
+    .img-wrapper { overflow: hidden; position: relative; }
+    .img-wrapper img { cursor: grab; user-select: none; }
+    .img-wrapper img.dragging { cursor: grabbing; }
     .zoom-buttons {
         position: absolute;
         top: 5px;
@@ -344,6 +346,38 @@ foreach ($immagini as $img) {
             img.src = cb.dataset.src;
             img.id = 'zoom-img-' + index;
             img.setAttribute('data-zoom', 1);
+            img.setAttribute('data-x', 0);
+            img.setAttribute('data-y', 0);
+            img.draggable = false;
+
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+
+            scrollBox.addEventListener('mousedown', e => {
+                if (parseFloat(img.getAttribute('data-zoom')) <= 1) return;
+                isDragging = true;
+                img.classList.add('dragging');
+                startX = e.clientX - parseFloat(img.getAttribute('data-x'));
+                startY = e.clientY - parseFloat(img.getAttribute('data-y'));
+            });
+
+            scrollBox.addEventListener('mousemove', e => {
+                if (!isDragging) return;
+                const x = e.clientX - startX;
+                const y = e.clientY - startY;
+                const zoom = parseFloat(img.getAttribute('data-zoom'));
+                img.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
+                img.setAttribute('data-x', x);
+                img.setAttribute('data-y', y);
+            });
+
+            ['mouseup', 'mouseleave'].forEach(evt => {
+                scrollBox.addEventListener(evt, () => {
+                    isDragging = false;
+                    img.classList.remove('dragging');
+                });
+            });
 
             scrollBox.appendChild(img);
 
@@ -370,11 +404,19 @@ foreach ($immagini as $img) {
 
     function zoomImage(id, factor) {
         const img = document.getElementById(id);
-        let currentZoom = parseFloat(img.getAttribute('data-zoom'));
-        currentZoom *= factor;
-        img.style.transform = 'scale(' + currentZoom + ')';
+        let currentZoom = parseFloat(img.getAttribute('data-zoom')) * factor;
+        let currentX = parseFloat(img.getAttribute('data-x')) || 0;
+        let currentY = parseFloat(img.getAttribute('data-y')) || 0;
+        if (currentZoom <= 1) {
+            currentZoom = 1;
+            currentX = 0;
+            currentY = 0;
+        }
+        img.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom})`;
         img.style.transformOrigin = 'center';
         img.setAttribute('data-zoom', currentZoom);
+        img.setAttribute('data-x', currentX);
+        img.setAttribute('data-y', currentY);
     }
 
     function clearComparison() {

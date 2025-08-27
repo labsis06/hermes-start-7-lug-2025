@@ -300,6 +300,19 @@ foreach ($immagini as $img) {
     <div id="confronto-immagini-popup"></div>
 </div>
 
+<style>
+    .confronto-immagine { position: relative; display: inline-block; }
+    .img-wrapper { overflow: hidden; }
+    .zoom-buttons {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        z-index: 10;
+        display: flex;
+        gap: 4px;
+    }
+</style>
+
 <script>
     const confrontoPopup = document.getElementById('confronto-popup');
     const confrontoImmaginiPopup = document.getElementById('confronto-immagini-popup');
@@ -360,6 +373,7 @@ foreach ($immagini as $img) {
         let currentZoom = parseFloat(img.getAttribute('data-zoom'));
         currentZoom *= factor;
         img.style.transform = 'scale(' + currentZoom + ')';
+        img.style.transformOrigin = 'center';
         img.setAttribute('data-zoom', currentZoom);
     }
 

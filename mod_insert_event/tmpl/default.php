@@ -145,7 +145,14 @@
     <div class="col-8">
         <input id="immagine" name="immagine" type="file" accept="image/*" class="form-control">
     </div>
-</div>
+  </div>
+
+  <div class="form-group row">
+    <label for="file_evento" class="col-4 col-form-label">File</label>
+    <div class="col-8">
+        <input id="file_evento" name="file_evento" type="file" class="form-control">
+    </div>
+  </div>
 
   <div class="form-group row">
     <label for="note" class="col-4 col-form-label">Note</label>

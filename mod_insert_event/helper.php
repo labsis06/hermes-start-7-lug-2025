@@ -58,6 +58,26 @@ class ModInsertEventHelper
                 $db->execute();
             }
 
+            // Se è stato caricato un file, inserisci anche in hermes_files
+            if (!empty($data['file_nome']) && !empty($data['file_percorso'])) {
+                $query = $db->getQuery(true);
+
+                $columns = ['id_evento', 'nome_file', 'percorso_file'];
+                $values = [
+                    (int) $idEvento,
+                    $db->quote($data['file_nome']),
+                    $db->quote($data['file_percorso'])
+                ];
+
+                $query
+                    ->insert($db->quoteName('hermes_files'))
+                    ->columns($db->quoteName($columns))
+                    ->values(implode(',', $values));
+
+                $db->setQuery($query);
+                $db->execute();
+            }
+
             return true;
         } catch (Exception $e) {
             echo '<pre><strong>ERRORE:</strong> ' . $e->getMessage() . '</pre>';

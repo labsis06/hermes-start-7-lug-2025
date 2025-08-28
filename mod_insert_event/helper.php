@@ -35,30 +35,7 @@ class ModInsertEventHelper
             $db->setQuery($query);
             $db->execute();
 
-            // ID dell'evento appena inserito
-            $idEvento = $db->insertid();
-
-            // Se è stata caricata un'immagine, inserisci anche in hermes_immagini
-            if (!empty($data['immagine_nome']) && !empty($data['immagine_percorso'])) {
-                $query = $db->getQuery(true);
-
-                $columns = ['id_evento', 'nome_file', 'percorso_file'];
-                $values = [
-                    (int) $idEvento,
-                    $db->quote($data['immagine_nome']),
-                    $db->quote($data['immagine_percorso'])
-                ];
-
-                $query
-                    ->insert($db->quoteName('hermes_immagini'))
-                    ->columns($db->quoteName($columns))
-                    ->values(implode(',', $values));
-
-                $db->setQuery($query);
-                $db->execute();
-            }
-
-            return true;
+            return (int) $db->insertid();
         } catch (Exception $e) {
             echo '<pre><strong>ERRORE:</strong> ' . $e->getMessage() . '</pre>';
             return false;

@@ -1,10 +1,13 @@
 <?php defined('_JEXEC') or die;
 $db = JFactory::getDbo();
+$input = JFactory::getApplication()->input;
+
 
 // GESTIONE UPLOAD MULTIPLO
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_event_id']) && isset($_FILES['new_images'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_event_id'])) {
     $addEventId = (int) $_POST['add_event_id'];
-    $files = $_FILES['new_images'];
+    $files      = $input->files->get('immagine', [], 'array');
+    if (!empty($files)) {
     $uploadDir = 'images/eventi/';
     $uploadPath = JPATH_ROOT . '/' . $uploadDir;
     if (!is_dir($uploadPath)) {
@@ -24,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_event_id']) && is
                 echo '<div class="alert alert-success mt-2">✅ Immagine "' . $filename . '" aggiunta a evento ' . $addEventId . '.</div>';
             }
         }
+    }
     }
 }
 
@@ -47,35 +51,37 @@ if (isset($_POST['delete_image_id'])) {
 }
 
 // SOSTITUZIONE
-if (isset($_POST['replace_image_id']) && isset($_FILES['replace_file']) && $_FILES['replace_file']['error'] === UPLOAD_ERR_OK) {
-    $replaceId = (int) $_POST['replace_image_id'];
-    $query = $db->getQuery(true)
-        ->select('percorso_file')
-        ->from($db->qn('hermes_immagini'))
-        ->where('id = ' . $replaceId);
-    $db->setQuery($query);
-    $oldPath = $db->loadResult();
-    if ($oldPath && file_exists(JPATH_ROOT . '/' . $oldPath)) {
-        unlink(JPATH_ROOT . '/' . $oldPath);
-    }
-    $newFile = $_FILES['replace_file'];
-    $uploadDir = 'images/eventi/';
-    $uploadPath = JPATH_ROOT . '/' . $uploadDir;
-    if (!is_dir($uploadPath)) {
-        mkdir($uploadPath, 0755, true);
-    }
-    $newName = basename($newFile['name']);
-    $newPath = $uploadDir . $newName;
-    if (move_uploaded_file($newFile['tmp_name'], $uploadPath . $newName)) {
-        $query = $db->getQuery(true)
-            ->update($db->qn('hermes_immagini'))
-            ->set([
-                $db->qn('nome_file') . ' = ' . $db->quote($newName),
-                $db->qn('percorso_file') . ' = ' . $db->quote($newPath)
-            ])
+if (isset($_POST['replace_image_id'])) {
+    $newFile = $input->files->get('file_evento', [], 'array');
+    if ($newFile && $newFile['error'] === UPLOAD_ERR_OK) {
+        $replaceId = (int) $_POST['replace_image_id'];
+        $query     = $db->getQuery(true)
+            ->select('percorso_file')
+            ->from($db->qn('hermes_immagini'))
             ->where('id = ' . $replaceId);
-        $db->setQuery($query)->execute();
-        echo '<div class="alert alert-success mt-2">✅ Immagine sostituita.</div>';
+        $db->setQuery($query);
+        $oldPath = $db->loadResult();
+        if ($oldPath && file_exists(JPATH_ROOT . '/' . $oldPath)) {
+            unlink(JPATH_ROOT . '/' . $oldPath);
+        }
+        $uploadDir  = 'images/eventi/';
+        $uploadPath = JPATH_ROOT . '/' . $uploadDir;
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0755, true);
+        }
+        $newName = basename($newFile['name']);
+        $newPath = $uploadDir . $newName;
+        if (move_uploaded_file($newFile['tmp_name'], $uploadPath . $newName)) {
+            $query = $db->getQuery(true)
+                ->update($db->qn('hermes_immagini'))
+                ->set([
+                    $db->qn('nome_file') . ' = ' . $db->quote($newName),
+                    $db->qn('percorso_file') . ' = ' . $db->quote($newPath)
+                ])
+                ->where('id = ' . $replaceId);
+            $db->setQuery($query)->execute();
+            echo '<div class="alert alert-success mt-2">✅ Immagine sostituita.</div>';
+        }
     }
 }
 
@@ -95,8 +101,8 @@ $images = $db->loadObjectList();
                 <input type="number" name="add_event_id" id="add_event_id" class="form-control" required>
             </div>
             <div class="mb-3">
-                <label for="new_images" class="form-label">Seleziona immagini</label>
-                <input type="file" name="new_images[]" id="new_images" class="form-control" multiple required>
+                <label for="immagine" class="form-label">Seleziona immagini</label>
+                <input type="file" name="immagine[]" id="immagine" class="form-control" multiple required>
             </div>
             <button type="submit" class="btn btn-primary">Carica Immagini</button>
         </fieldset>
@@ -115,7 +121,7 @@ $images = $db->loadObjectList();
                                 <p class="card-text"><strong>ID Evento:</strong> <?= (int)$img->id_evento ?></p>
                                 <form method="post" enctype="multipart/form-data" class="mb-2">
                                     <input type="hidden" name="replace_image_id" value="<?= (int)$img->id ?>">
-                                    <input type="file" name="replace_file" class="form-control mb-2" required>
+                                    <input type="file" name="file_evento" class="form-control mb-2" required>
                                     <button type="submit" class="btn btn-warning w-100">Sostituisci</button>
                                 </form>
                                 <form method="post">

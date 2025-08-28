@@ -141,11 +141,18 @@
 </div>
   
   <div class="form-group row">
-    <label for="immagine" class="col-4 col-form-label">Immagine</label>
+    <label for="immagine" class="col-4 col-form-label">Immagini</label>
     <div class="col-8">
-        <input id="immagine" name="immagine" type="file" accept="image/*" class="form-control">
+        <input id="immagine" name="immagine[]" type="file" accept="image/*" class="form-control" multiple>
     </div>
-</div>
+  </div>
+
+  <div class="form-group row">
+    <label for="file_evento" class="col-4 col-form-label">File</label>
+    <div class="col-8">
+        <input id="file_evento" name="file_evento[]" type="file" class="form-control" multiple>
+    </div>
+  </div>
 
   <div class="form-group row">
     <label for="note" class="col-4 col-form-label">Note</label>

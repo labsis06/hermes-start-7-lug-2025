@@ -38,24 +38,46 @@ class ModInsertEventHelper
             // ID dell'evento appena inserito
             $idEvento = $db->insertid();
 
-            // Se è stata caricata un'immagine, inserisci anche in hermes_immagini
-            if (!empty($data['immagine_nome']) && !empty($data['immagine_percorso'])) {
-                $query = $db->getQuery(true);
+            if (!empty($data['immagini'])) {
+                foreach ($data['immagini'] as $img) {
+                    $query = $db->getQuery(true);
 
-                $columns = ['id_evento', 'nome_file', 'percorso_file'];
-                $values = [
-                    (int) $idEvento,
-                    $db->quote($data['immagine_nome']),
-                    $db->quote($data['immagine_percorso'])
-                ];
+                    $columns = ['id_evento', 'nome_file', 'percorso_file'];
+                    $values = [
+                        (int) $idEvento,
+                        $db->quote($img['nome']),
+                        $db->quote($img['percorso'])
+                    ];
 
-                $query
-                    ->insert($db->quoteName('hermes_immagini'))
-                    ->columns($db->quoteName($columns))
-                    ->values(implode(',', $values));
+                    $query
+                        ->insert($db->quoteName('hermes_immagini'))
+                        ->columns($db->quoteName($columns))
+                        ->values(implode(',', $values));
 
-                $db->setQuery($query);
-                $db->execute();
+                    $db->setQuery($query);
+                    $db->execute();
+                }
+            }
+
+            if (!empty($data['files'])) {
+                foreach ($data['files'] as $file) {
+                    $query = $db->getQuery(true);
+
+                    $columns = ['id_evento', 'nome_file', 'percorso_file'];
+                    $values = [
+                        (int) $idEvento,
+                        $db->quote($file['nome']),
+                        $db->quote($file['percorso'])
+                    ];
+
+                    $query
+                        ->insert($db->quoteName('hermes_files'))
+                        ->columns($db->quoteName($columns))
+                        ->values(implode(',', $values));
+
+                    $db->setQuery($query);
+                    $db->execute();
+                }
             }
 
             return true;
